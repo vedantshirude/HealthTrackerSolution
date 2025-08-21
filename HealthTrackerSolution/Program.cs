@@ -1,16 +1,16 @@
-using HealthTrackerSolution.DataContext;
+﻿using HealthTrackerSolution.DataContext;
 using HealthTrackerSolution.Interface;
 using HealthTrackerSolution.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Add services
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add CORS service
+// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -21,28 +21,28 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Get connection string from config
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// Check if Render provides DATABASE_URL (Postgres)
+// 🔑 Prefer DATABASE_URL (Render), fallback to appsettings.json
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+string connectionString;
+
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    // Render gives DATABASE_URL in the format:
-    // postgres://username:password@host:port/dbname
+    // Convert DATABASE_URL to Npgsql connection string
     var dbUri = new Uri(databaseUrl);
     var userInfo = dbUri.UserInfo.Split(':');
 
     connectionString =
-        $"Host={dbUri.Host};Port={dbUri.Port};Database={dbUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+        $"Host={dbUri.Host};Port={dbUri.Port};Database={dbUri.AbsolutePath.TrimStart('/')};" +
+        $"Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
 
-    // Use Postgres when running on Render
     builder.Services.AddDbContext<dataContext>(options =>
         options.UseNpgsql(connectionString));
 }
 else
 {
-    // Default to SQL Server locally
+    // fallback for local SQL Server
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
     builder.Services.AddDbContext<dataContext>(options =>
         options.UseSqlServer(connectionString));
 }
@@ -54,7 +54,7 @@ var app = builder.Build();
 // Use CORS middleware
 app.UseCors("AllowAll");
 
-// Configure the HTTP request pipeline.
+// Swagger only in dev
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -62,9 +62,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
