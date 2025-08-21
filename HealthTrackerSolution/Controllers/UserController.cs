@@ -21,7 +21,7 @@ namespace HealthTrackerSolution.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("SignUp")]
         public async Task<IActionResult> AddUser([FromBody] User user)
         {
