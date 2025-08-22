@@ -59,34 +59,7 @@ else
 }
 
 
-
-    /*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
-    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-    string connectionString;
-
-    if (!string.IsNullOrEmpty(databaseUrl))
-    {
-        // Convert DATABASE_URL to Npgsql connection string
-        var dbUri = new Uri(databaseUrl);
-        var userInfo = dbUri.UserInfo.Split(':');
-
-        connectionString =
-            $"Host={dbUri.Host};Port={dbUri.Port};Database={dbUri.AbsolutePath.TrimStart('/')};" +
-            $"Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-
-        builder.Services.AddDbContext<dataContext>(options =>
-            options.UseNpgsql(connectionString));
-    }
-    else
-    {
-        // fallback for local SQL Server
-        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-        builder.Services.AddDbContext<dataContext>(options =>
-            options.UseSqlServer(connectionString));
-    }*/
-
-    builder.Services.AddScoped<IUser, UserRepository>();
+builder.Services.AddScoped<IUser, UserRepository>();
 
 var app = builder.Build();
 
