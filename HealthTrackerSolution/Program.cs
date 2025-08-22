@@ -2,6 +2,7 @@
 using HealthTrackerSolution.Interface;
 using HealthTrackerSolution.Repository;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,7 +48,7 @@ if (!string.IsNullOrEmpty(databaseUrl))
     var connectionString = ConvertDatabaseUrlToConnectionString(databaseUrl);
 
     builder.Services.AddDbContext<dataContext>(options =>
-        options.UseNpgsql(connectionString));
+        options.UseNpgsql(connectionString).ConfigureWarnings(warnings => warnings.Log(RelationalEventId.PendingModelChangesWarning)));
 }
 else
 {
