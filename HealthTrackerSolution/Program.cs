@@ -56,7 +56,7 @@ else
     string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
     builder.Services.AddDbContext<dataContext>(options =>
-        options.UseSqlServer(connectionString));
+        options.UseNpgsql(connectionString));
 }
 
 
@@ -67,7 +67,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<dataContext>();
-    db.Database.Migrate(); // applies any pending migrations
+    db.Database.Migrate();// applies any pending migrations
 }
 
 // Use CORS middleware
