@@ -23,22 +23,28 @@ builder.Services.AddCors(options =>
 });
 
 
+string ConvertDatabaseUrlToConnectionString(string databaseUrl)
+{
+    var uri = new Uri(databaseUrl);
+
+    var userInfo = uri.UserInfo.Split(':');
+    var username = userInfo[0];
+    var password = userInfo.Length > 1 ? userInfo[1] : "";
+
+    return $"Host={uri.Host};Port={(uri.Port > 0 ? uri.Port : 5432)};" +
+           $"Database={uri.AbsolutePath.TrimStart('/')};" +
+           $"Username={username};Password={password};" +
+           $"SSL Mode=Require;Trust Server Certificate=true";
+}
+
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
 if (string.IsNullOrEmpty(databaseUrl))
-    throw new InvalidOperationException("DATABASE_URL environment variable not set.");
+    throw new InvalidOperationException("DATABASE_URL is not set");
 
-// Build data source directly from DATABASE_URL
-var dataSourceBuilder = new NpgsqlDataSourceBuilder(databaseUrl);
-
-// Configure SSL for Render/Postgres
-dataSourceBuilder.ConnectionStringBuilder.SslMode = SslMode.Require;
-dataSourceBuilder.ConnectionStringBuilder.TrustServerCertificate = true;
-
-var dataSource = dataSourceBuilder.Build();
+var connectionString = ConvertDatabaseUrlToConnectionString(databaseUrl);
 
 builder.Services.AddDbContext<dataContext>(options =>
-    options.UseNpgsql(dataSource));
+    options.UseNpgsql(connectionString));
 
 
 /*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
