@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HealthTrackerSolution.Migrations
 {
     [DbContext(typeof(dataContext))]
-    [Migration("20250817045346_namefieldadded")]
-    partial class namefieldadded
+    [Migration("20250822100048_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -38,29 +38,13 @@ string ConvertDatabaseUrlToConnectionString(string databaseUrl)
 }
 
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-if (string.IsNullOrEmpty(databaseUrl))
-    throw new InvalidOperationException("DATABASE_URL is not set");
-
-var connectionString = ConvertDatabaseUrlToConnectionString(databaseUrl);
-
-builder.Services.AddDbContext<dataContext>(options =>
-    options.UseNpgsql(connectionString));
-
-
-
-/*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
-var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-string connectionString;
 
 if (!string.IsNullOrEmpty(databaseUrl))
 {
-    // Convert DATABASE_URL to Npgsql connection string
-    var dbUri = new Uri(databaseUrl);
-    var userInfo = dbUri.UserInfo.Split(':');
+    if (string.IsNullOrEmpty(databaseUrl))
+        throw new InvalidOperationException("DATABASE_URL is not set");
 
-    connectionString =
-        $"Host={dbUri.Host};Port={dbUri.Port};Database={dbUri.AbsolutePath.TrimStart('/')};" +
-        $"Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+    var connectionString = ConvertDatabaseUrlToConnectionString(databaseUrl);
 
     builder.Services.AddDbContext<dataContext>(options =>
         options.UseNpgsql(connectionString));
@@ -68,13 +52,41 @@ if (!string.IsNullOrEmpty(databaseUrl))
 else
 {
     // fallback for local SQL Server
-    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
     builder.Services.AddDbContext<dataContext>(options =>
         options.UseSqlServer(connectionString));
-}*/
+}
 
-builder.Services.AddScoped<IUser, UserRepository>();
+
+
+    /*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    string connectionString;
+
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Convert DATABASE_URL to Npgsql connection string
+        var dbUri = new Uri(databaseUrl);
+        var userInfo = dbUri.UserInfo.Split(':');
+
+        connectionString =
+            $"Host={dbUri.Host};Port={dbUri.Port};Database={dbUri.AbsolutePath.TrimStart('/')};" +
+            $"Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+
+        builder.Services.AddDbContext<dataContext>(options =>
+            options.UseNpgsql(connectionString));
+    }
+    else
+    {
+        // fallback for local SQL Server
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+        builder.Services.AddDbContext<dataContext>(options =>
+            options.UseSqlServer(connectionString));
+    }*/
+
+    builder.Services.AddScoped<IUser, UserRepository>();
 
 var app = builder.Build();
 
