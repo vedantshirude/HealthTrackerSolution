@@ -47,6 +47,7 @@ builder.Services.AddDbContext<dataContext>(options =>
     options.UseNpgsql(connectionString));
 
 
+
 /*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
@@ -76,6 +77,12 @@ else
 builder.Services.AddScoped<IUser, UserRepository>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<dataContext>();
+    db.Database.Migrate(); // applies any pending migrations
+}
 
 // Use CORS middleware
 app.UseCors("AllowAll");
