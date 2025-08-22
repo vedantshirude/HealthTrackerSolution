@@ -21,7 +21,30 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 🔑 Prefer DATABASE_URL (Render), fallback to appsettings.json
+
+
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(databaseUrl))
+    throw new InvalidOperationException("DATABASE_URL environment variable not set.");
+
+// Parse the DATABASE_URL (URI format) into Npgsql connection string
+var databaseUri = new Uri(databaseUrl);
+var userInfo = databaseUri.UserInfo.Split(':');
+
+var connStr =
+    $"Host={databaseUri.Host};" +
+    $"Port={databaseUri.Port};" +
+    $"Database={databaseUri.AbsolutePath.TrimStart('/')};" +
+    $"Username={userInfo[0]};" +
+    $"Password={userInfo[1]};" +
+    "SSL Mode=Require;Trust Server Certificate=true";
+
+builder.Services.AddDbContext<dataContext>(options =>
+    options.UseNpgsql(connStr));
+
+
+/*// ?? Prefer DATABASE_URL (Render), fallback to appsettings.json
 var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 string connectionString;
 
@@ -45,7 +68,7 @@ else
 
     builder.Services.AddDbContext<dataContext>(options =>
         options.UseSqlServer(connectionString));
-}
+}*/
 
 builder.Services.AddScoped<IUser, UserRepository>();
 
